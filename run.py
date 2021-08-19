@@ -1,5 +1,4 @@
-from random import choice
-from flask import Flask
+from flask import Flask, request, jsonify
 from experta import *
 import queue
 
@@ -28,6 +27,10 @@ class AsistenteDental(KnowledgeEngine):
 
     q = queue.Queue()
 
+    @Rule(ExtraccionDentaria(realizada="si"), salience=2)
+    def colocacion(self):
+        self.result = "colocación"
+
     @Rule(
         OR(Corona(fracturada='si'),
             AND(Corona(cariada='si'), Corona(destruida='si')),
@@ -35,18 +38,14 @@ class AsistenteDental(KnowledgeEngine):
             Casos(supernumerario="si"),
             PiezaDentaria(malUbicada="si")), salience=1)
     def extraccion(self):
-        self.result = "Extracción"
-
-    @Rule(ExtraccionDentaria(realizada="si"), salience=2)
-    def colocacion(self):
-        self.result = "Colocación"
+        self.result = "extracción"
 
     @Rule(Corona())
     def any(self):
         self.q.put(self.result)
     
     def reset(self):
-        self.result = "Sin tratamiento"
+        self.result = "sin tratamiento"
         super().reset()
 
     def get(self):
@@ -57,19 +56,43 @@ engine = AsistenteDental()
 app = Flask(__name__)
 
 
-@app.route("/test")
+def setArgument(json, key, defaultValue):
+    if not key in json:
+        json[key] = defaultValue
+    value = json[key]
+    if (value != 'si' and value != 'no'):
+        json[key] = defaultValue
+
+
+def setArguments(json):
+    setArgument(json, 'fracturada', 'no')
+    setArgument(json, 'cariada', 'no')
+    setArgument(json, 'destruida', 'no')
+    setArgument(json, 'raizRecuperable', 'si')
+    setArgument(json, 'supernumerario', 'no')
+    setArgument(json, 'malUbicada', 'no')
+    setArgument(json, 'realizada', 'no')
+
+
+@app.route("/consulta", methods=['POST'])
 def test():
+    if not request.json:
+        return jsonify({'Message': 'Request without JSON body.'})
+
+    json = request.json
+    setArguments(json)
+
     engine.reset()
-    # choice(['si', 'no'])
     engine.declare(
-        Corona(fracturada="no", cariada="no", destruida="no"),
-        Raiz(raizRecuperable="no"),
-        Casos(supernumerario="no"),
-        PiezaDentaria(malUbicada="no"),
-        ExtraccionDentaria(realizada="si"))
+        Corona(fracturada=json['fracturada'], cariada=json['cariada'], destruida=json['destruida']),
+        Raiz(raizRecuperable=json['raizRecuperable']),
+        Casos(supernumerario=json['supernumerario']),
+        PiezaDentaria(malUbicada=json['malUbicada']),
+        ExtraccionDentaria(realizada=json['realizada']))
     engine.run()
     result = engine.get()
-    return "<h2 style='color:grey'>" + result + "</h2>"
+    return jsonify({'Tratamiento': result})
+
 
 @app.route("/")
 def main():
