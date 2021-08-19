@@ -8,17 +8,38 @@ class Corona(Fact):
     pass
 
 
+class Raiz(Fact):
+    pass
+
+
+class Casos(Fact):
+    pass
+
+
+class PiezaDentaria(Fact):
+    pass
+
+
+class ExtraccionDentaria(Fact):
+    pass
+
+
 class AsistenteDental(KnowledgeEngine):
 
     q = queue.Queue()
 
-    @Rule(Corona(fracturada='no', cariada='si', destruida='no'), salience=1)
-    def fracturada(self):
-        self.result = "Recuperación"
-
-    @Rule(OR(Corona(fracturada='si'), Corona(destruida='si')), salience=1)
-    def cariadaYDestruida(self):
+    @Rule(
+        OR(Corona(fracturada='si'),
+            AND(Corona(cariada='si'), Corona(destruida='si')),
+            Raiz(raizRecuperable="no"),
+            Casos(supernumerario="si"),
+            PiezaDentaria(malUbicada="si")), salience=1)
+    def extraccion(self):
         self.result = "Extracción"
+
+    @Rule(ExtraccionDentaria(realizada="si"), salience=2)
+    def colocacion(self):
+        self.result = "Colocación"
 
     @Rule(Corona())
     def any(self):
@@ -39,13 +60,16 @@ app = Flask(__name__)
 @app.route("/test")
 def test():
     engine.reset()
-    f = choice(['si', 'no'])
-    c = choice(['si', 'no'])
-    d = choice(['si', 'no'])
-    engine.declare(Corona(fracturada=f, cariada=c, destruida=d))
+    # choice(['si', 'no'])
+    engine.declare(
+        Corona(fracturada="no", cariada="no", destruida="no"),
+        Raiz(raizRecuperable="no"),
+        Casos(supernumerario="no"),
+        PiezaDentaria(malUbicada="no"),
+        ExtraccionDentaria(realizada="si"))
     engine.run()
     result = engine.get()
-    return "Fracturada: " + f + "<br>Cariada: " + c + "<br>Destruida: " + d + "<br><h2 style='color:grey'>" + result + "</h2>"
+    return "<h2 style='color:grey'>" + result + "</h2>"
 
 @app.route("/")
 def main():
