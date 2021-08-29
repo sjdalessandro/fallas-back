@@ -3,11 +3,27 @@ from experta import *
 import queue
 
 
+class Encia(Fact):
+    pass
+
+
 class Corona(Fact):
     pass
 
 
+class Esmalte(Fact):
+    pass
+
+
+class Dentina(Fact):
+    pass
+
+
 class Raiz(Fact):
+    pass
+
+
+class Pulpa(Fact):
     pass
 
 
@@ -19,22 +35,21 @@ class PiezaDentaria(Fact):
     pass
 
 
-class ExtraccionDentaria(Fact):
-    pass
-
-
 class AsistenteDental(KnowledgeEngine):
 
     q = queue.Queue()
 
-    @Rule(ExtraccionDentaria(realizada="si"), salience=2)
-    def colocacion(self):
-        self.result = "colocación"
+    @Rule(OR(Esmalte(cariado='si'), Dentina(cariada='si')), salience=3)
+    def reparación(self):
+        self.result = "reparación"
+
+    @Rule(OR(Encia(infectada='si'), Pulpa(cariada='si')), salience=2)
+    def endodoncia(self):
+        self.result = "endodoncia"
 
     @Rule(
         OR(Corona(fracturada='si'),
-            AND(Corona(cariada='si'), Corona(destruida='si')),
-            Raiz(raizRecuperable="no"),
+            Raiz(recuperable="no"),
             Casos(supernumerario="si"),
             PiezaDentaria(malUbicada="si")), salience=1)
     def extraccion(self):
@@ -63,15 +78,15 @@ def setArgument(json, key, defaultValue):
     if (value != 'si' and value != 'no'):
         json[key] = defaultValue
 
-
 def setArguments(json):
-    setArgument(json, 'fracturada', 'no')
-    setArgument(json, 'cariada', 'no')
-    setArgument(json, 'destruida', 'no')
+    setArgument(json, 'esmalteCariado', 'no')
+    setArgument(json, 'dentinaCariada', 'no')
+    setArgument(json, 'enciaInfectada', 'no')
+    setArgument(json, 'pulpaCariada', 'no')
+    setArgument(json, 'coronaFracturada', 'no')
+    setArgument(json, 'casoSupernumerario', 'no')
+    setArgument(json, 'piezaDentariaMalUbicada', 'no')
     setArgument(json, 'raizRecuperable', 'si')
-    setArgument(json, 'supernumerario', 'no')
-    setArgument(json, 'malUbicada', 'no')
-    setArgument(json, 'realizada', 'no')
 
 
 @app.route("/consulta", methods=['POST'])
@@ -84,11 +99,14 @@ def test():
 
     engine.reset()
     engine.declare(
-        Corona(fracturada=json['fracturada'], cariada=json['cariada'], destruida=json['destruida']),
-        Raiz(raizRecuperable=json['raizRecuperable']),
-        Casos(supernumerario=json['supernumerario']),
-        PiezaDentaria(malUbicada=json['malUbicada']),
-        ExtraccionDentaria(realizada=json['realizada']))
+        Corona(fracturada=json['coronaFracturada']),
+        Raiz(recuperable=json['raizRecuperable']),
+        Casos(supernumerario=json['casoSupernumerario']),
+        PiezaDentaria(malUbicada=json['piezaDentariaMalUbicada']),
+        Esmalte(cariado=json['esmalteCariado']),
+        Dentina(cariada=json['dentinaCariada']),
+        Encia(infectada=json['enciaInfectada']),
+        Pulpa(cariada=json['pulpaCariada']))
     engine.run()
     result = engine.get()
     return jsonify({'Tratamiento': result})
