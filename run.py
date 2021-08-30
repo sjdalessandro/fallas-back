@@ -41,14 +41,14 @@ class AsistenteDental(KnowledgeEngine):
 
     @Rule(OR(Esmalte(cariado='si'), Dentina(cariada='si')), salience=3)
     def reparación(self):
-        self.result = {'Tratamiento': 'Reparación',
+        self.result = {'Tratamiento': 'Reparación dentaria',
                        'Procedimiento': 'Primero eliminar la carie con un torno, removiendo así el tejido necrótico, luego aplicar ácido grabador para mejorar la adhesión de un elemento restaurativo, que puede ser de composite o una cerámica fotocurable, como ser amalgama o resina restauradora.',
                        'Herramientas': 'Fresas, torno, anestesia de ser necesario, ácido grabador, espátula, elemento restaurador.'}
 
 
     @Rule(OR(Encia(infectada='si'), Pulpa(cariada='si')), salience=2)
     def endodoncia(self):
-        self.result = {'Tratamiento': 'Endodoncia',
+        self.result = {'Tratamiento': 'Tratamiento de conducto',
                        'Procedimiento': 'Primero limpiar los conductos con las limas, luego taparlos con los conos de gutapercha. Finalmente para restaurar el diente aplicar ácido grabador para mejorar la adhesión de un elemento restaurativo, que puede ser de composite o una cerámica fotocurable, como ser amalgama o resina restauradora.',
                        'Herramientas': 'Limas, conos de gutapercha, anestesia, fresas, torno, ácido grabador, espátula, elemento restaurador.'}
 
@@ -59,7 +59,7 @@ class AsistenteDental(KnowledgeEngine):
             Casos(supernumerario="si"),
             PiezaDentaria(malUbicada="si")), salience=1)
     def extraccion(self):
-        self.result = {'Tratamiento': 'Extracción',
+        self.result = {'Tratamiento': 'Extracción dentaria',
                        'Procedimiento': 'Primero aplicar la anestesia, luego con ayuda de fórceps y elevadores remover la pieza. De producirse una hemorragia utilizar las gasas para controlar el sangrado.',
                        'Herramientas': 'Anestesia, fórceps, elevadores y gasas'}
 
@@ -70,7 +70,7 @@ class AsistenteDental(KnowledgeEngine):
     
 
     def reset(self):
-        self.result = {'Tratamiento': "sin tratamiento",
+        self.result = {'Tratamiento': "Sin tratamiento",
                        'Procedimiento': '',
                        'Herramientas': ''}
         super().reset()
