@@ -41,11 +41,17 @@ class AsistenteDental(KnowledgeEngine):
 
     @Rule(OR(Esmalte(cariado='si'), Dentina(cariada='si')), salience=3)
     def reparación(self):
-        self.result = "reparación"
+        self.result = {'Tratamiento': 'Reparación',
+                       'Procedimiento': 'Primero eliminar la carie con un torno, removiendo así el tejido necrótico, luego aplicar ácido grabador para mejorar la adhesión de un elemento restaurativo, que puede ser de composite o una cerámica fotocurable, como ser amalgama o resina restauradora.',
+                       'Herramientas': 'Fresas, torno, anestesia de ser necesario, ácido grabador, espátula, elemento restaurador.'}
+
 
     @Rule(OR(Encia(infectada='si'), Pulpa(cariada='si')), salience=2)
     def endodoncia(self):
-        self.result = "endodoncia"
+        self.result = {'Tratamiento': 'Endodoncia',
+                       'Procedimiento': 'Primero limpiar los conductos con las limas, luego taparlos con los conos de gutapercha. Finalmente para restaurar el diente aplicar ácido grabador para mejorar la adhesión de un elemento restaurativo, que puede ser de composite o una cerámica fotocurable, como ser amalgama o resina restauradora.',
+                       'Herramientas': 'Limas, conos de gutapercha, anestesia, fresas, torno, ácido grabador, espátula, elemento restaurador.'}
+
 
     @Rule(
         OR(Corona(fracturada='si'),
@@ -53,15 +59,22 @@ class AsistenteDental(KnowledgeEngine):
             Casos(supernumerario="si"),
             PiezaDentaria(malUbicada="si")), salience=1)
     def extraccion(self):
-        self.result = "extracción"
+        self.result = {'Tratamiento': 'Extracción',
+                       'Procedimiento': 'Primero aplicar la anestesia, luego con ayuda de fórceps y elevadores remover la pieza. De producirse una hemorragia utilizar las gasas para controlar el sangrado.',
+                       'Herramientas': 'Anestesia, fórceps, elevadores y gasas'}
+
 
     @Rule(Corona())
     def any(self):
         self.q.put(self.result)
     
+
     def reset(self):
-        self.result = "sin tratamiento"
+        self.result = {'Tratamiento': "sin tratamiento",
+                       'Procedimiento': '',
+                       'Herramientas': ''}
         super().reset()
+
 
     def get(self):
         return self.q.get()
@@ -77,6 +90,7 @@ def setArgument(json, key, defaultValue):
     value = json[key]
     if (value != 'si' and value != 'no'):
         json[key] = defaultValue
+
 
 def setArguments(json):
     setArgument(json, 'esmalteCariado', 'no')
@@ -109,7 +123,7 @@ def test():
         Pulpa(cariada=json['pulpaCariada']))
     engine.run()
     result = engine.get()
-    return jsonify({'Tratamiento': result})
+    return jsonify(result)
 
 
 @app.route("/")
