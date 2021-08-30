@@ -60,7 +60,7 @@ class AsistenteDental(KnowledgeEngine):
             PiezaDentaria(malUbicada="si")), salience=1)
     def extraccion(self):
         self.result = {'Tratamiento': 'Extracción dentaria',
-                       'Procedimiento': 'Primero aplicar la anestesia, luego con ayuda de fórceps y elevadores remover la pieza. De producirse una hemorragia utilizar las gasas para controlar el sangrado.',
+                       'Procedimiento': 'Primero realizar una anestesia local, luego con ayuda de fórceps o elevadores extraer la parte radicular sobre el tejido óseo. De producirse una hemorragia utilizar las gasas para controlar el sangrado.',
                        'Herramientas': 'Anestesia, fórceps, elevadores y gasas'}
 
 
